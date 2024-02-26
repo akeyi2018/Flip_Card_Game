@@ -5,12 +5,19 @@ from kivy.uix.button import Button
 from kivy.clock import Clock
 import random
 from kivy.uix.label import Label
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.image import Image 
 from kivy.lang import Builder
 Builder.load_file('card.kv')
 
-class MemoryButton(Button):
-    index = None
-
+class ImageButton(ButtonBehavior, Image):
+    def __init__(self, source, front_source, back_source, text, **kwargs):
+        super().__init__(**kwargs)
+        self.source = source
+        self.back_source = back_source
+        self.font_source = front_source
+        self.text = text
+        
 class MemoryGame(BoxLayout):
     def __init__(self, **kwargs):
         super(MemoryGame, self).__init__(**kwargs)
@@ -26,7 +33,9 @@ class MemoryGame(BoxLayout):
             for j in range(4):  #  4 columns
                 index =  4 * i + j
                 if index < len(self.cards):  # Ensure we don't go out of range
-                    btn = MemoryButton(text=" ")
+                    btn = ImageButton(source="./f.png",
+                                      front_source= "./f.png",
+                                      back_source=f"./{self.cards[index]}.png",text=" ")
                     btn.index = index
                     btn.bind(on_press=self.card_click)
                     self.buttons.append(btn)
@@ -38,9 +47,14 @@ class MemoryGame(BoxLayout):
         if instance.text != " ":
             return  # If the card is already flipped, do nothing
 
+        if instance.source == "f.png":
+            instance.source = f"./{self.cards[instance.index]}.png"
+        else:
+            instance.source = f"./{self.cards[instance.index]}.png"
+    
         # Flip the card
         instance.text = str(self.cards[instance.index])
-        instance.font_size = '50sp'
+        # instance.font_size = '50sp'
 
         # Check if this is the first card flipped
         if not self.flipped:
@@ -57,8 +71,9 @@ class MemoryGame(BoxLayout):
                 # If the cards match, do nothing (or handle the match as desired)
                 pass
             else:
+                print(f'1:{self.first_card} 2:{self.second_card}')
                 # If the cards do not match, flip them back after a delay
-                Clock.schedule_once(lambda dt: self.flip_back(self.first_card_index, self.second_card_index),  1.5)
+                Clock.schedule_once(lambda dt: self.flip_back(self.first_card_index, self.second_card_index),  1)
 
             # Reset the flipped list for the next pair
             self.flipped = []
@@ -83,6 +98,16 @@ class MemoryGame(BoxLayout):
     def flip_back(self, first_card_index, second_card_index):
         self.buttons[first_card_index].text = " "
         self.buttons[second_card_index].text = " "
+        # print(self.buttons[second_card_index].source)
+        self.buttons[first_card_index].source = './f.png'
+        self.buttons[second_card_index].source = './f.png'
+
+        # print(self.buttons[second_card_index].back_source)
+
+        # if self.source !=  "f.png":
+        #     self.source == "f.png"
+        # self.buttons[second_card_index].source == "f.png"
+         
 
 class MemoryApp(App):
     def build(self):
